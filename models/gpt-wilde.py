@@ -1,3 +1,5 @@
+# %%writefile gpt.py
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -6,7 +8,7 @@ from torch.nn import functional as F
 batch_size = 64 # how many independent sequences will we process in parallel?
 block_size = 256 # what is the maximum context length for predictions?
 max_iters = 5000
-eval_interval = 300
+eval_interval = 500
 learning_rate = 3e-4
 device = 'cuda' if torch.cuda.is_available() else 'mps'
 eval_iters = 200
@@ -68,6 +70,7 @@ class Head(nn.Module):
         self.query = nn.Linear(n_embd, head_size, bias=False)
         self.value = nn.Linear(n_embd, head_size, bias=False)
         self.register_buffer('tril', torch.tril(torch.ones(block_size, block_size)))
+
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -75,7 +78,7 @@ class Head(nn.Module):
         k = self.key(x)
         q = self.query(x)
         #compute attention scores ("affinities")
-        wei = q @ k.transpose(-2, -1) * C**0.5 # (B,T,C) @ (B,C,T) -> (B,T,T)
+        wei = q @ k.transpose(-2, -1) * C**-0.5 # (B,T,C) @ (B,C,T) -> (B,T,T)
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # B,T,T
         wei = F.softmax(wei, dim=-1) # (B,T,T)
         wei = self.dropout(wei)
@@ -208,7 +211,7 @@ optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 for iter in range(max_iters):
 
     # every once in a while evaluate the loss on train and val sets
-    if iter % eval_interval == 0:
+    if iter % eval_interval == 0 or iter == max_iters - 1:
         losses = estimate_loss()
         print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
 
