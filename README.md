@@ -1,3 +1,7 @@
 # WildeGPT
 
-Currently, the model has ~25.5M parameters. It was trained on the complete works of Oscar Wilde (`wilde.txt`). The `WildeGPT.txt` file was sampled after achieving a validation loss of 1.23 and a training loss of 1.06 with `max_iters` set to 5,000.
+The Wildest GPT model around. It was trained on the complete works of the great Oscar Wilde (`wilde.txt`). The `WildeGPT.txt` file was sampled from:
+
+| model | params | train loss | val loss |
+| ------| ------ | ---------- | -------- |
+| WildeGPT | 25.5M    | 1.06  | 1.23     |
