@@ -10,7 +10,7 @@ eval_interval = 300
 learning_rate = 3e-4
 device = 'cuda' if torch.cuda.is_available() else 'mps'
 eval_iters = 200
-n_embd = 384 # number of embeddings
+n_embd = 512 # number of embeddings
 n_head = 8
 n_layer = 8
 dropout = 0.2
@@ -155,6 +155,7 @@ class Transformer(nn.Module):
         # self.sa_head = Head(n_embd)
         # self.sa_heads = MultiHeadAttention(6, n_embd//6) # 6 heads 
         self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
+        self.ln_f = nn.LayerNorm(n_embd)
         #self.ffn = FeedForward(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size) # language modeling head
 
@@ -168,6 +169,7 @@ class Transformer(nn.Module):
         # x = self.sa_heads(x)
         x = self.blocks(x) # aply one head of self-attention (B,T,C)
         # x = self.ffn(x)
+        x = self.ln_f(x)
         logits = self.lm_head(x) # (B,T,vocab_size)
 
         if targets is None:
